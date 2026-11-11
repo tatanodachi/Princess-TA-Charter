@@ -277,21 +277,71 @@
     .page{padding:6px 0 8px}
     .clock{font-size:22px}
     .now-line{margin-top:2px;font-size:12px}
-    #mapInfo{margin-top:4px;padding:3px 8px;font-size:12px}
+    #mapInfo{margin:0;padding:0;font-size:12px}
     header h1{font-size:16px;line-height:1.2}
     .hdr .vessel{font-size:11px;margin:0;line-height:1.3}
     .hdr{padding:5px 0;margin-top:-6px}
     .logo{height:40px;margin:0 2px 0 0}
-    .mctl.mapov{flex-direction:column;flex-wrap:nowrap;align-items:flex-end;gap:4px;bottom:46px}
+    /* control panel separated from the map: a side strip on the right */
+    #map{background:var(--surface)}
+    #p1 #map svg{width:calc(100% - 100px);right:auto}
+    #map::after{content:'';position:absolute;top:0;right:0;bottom:0;width:100px;border-left:1px solid var(--ring);background:var(--surface);z-index:2;pointer-events:none}
+    .mctl.mapov{flex-direction:column;flex-wrap:nowrap;align-items:flex-end;gap:6px;right:7px;top:8px;bottom:auto;max-width:none;z-index:3}
     .mapov .btn{padding:2px 8px;font-size:11.5px}
-    .vtrack{right:150px;top:8px;bottom:10px;width:58px;padding:4px}
+    .mapov .btn.zb{width:36px;height:34px}
+    .vtrack{right:49px;top:8px;bottom:8px;width:48px;padding:4px 2px;background:transparent;border:0;z-index:3}
+    #map.dim .vtrack{top:8px}
+    .locbanner{right:100px}
     .infobar,.infobar .now-line{font-size:11.5px;gap:1px 12px}
     .lbcap{padding:2px 8px;font-size:11.5px;bottom:6px}.lbcap b{font-size:12.5px}
     .lbx{width:24px;height:24px;font-size:16px}
     #mapInfo .lab,.now-line .lab{margin-right:4px}
     .vtrack .clock{font-size:15px}
-    .vtrack .btn{padding:1px 0;font-size:11px}
+    .vtrack .btn{padding:5px 0;font-size:11px}
+    .vtrack input[type=range]{width:28px}
     .tr1 h2{display:none}
+    /* Page 2 fits one phone screen: two columns, compact rows */
+    #p2{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+    #p2 .p2grid{display:grid;grid-template-columns:minmax(0,2.5fr) minmax(0,1fr);gap:8px;align-items:start;flex:0 0 auto}
+    #p2 .p2side{display:flex;flex-direction:column;gap:6px}
+    #p2 .card{margin-top:0;padding:6px 9px}
+    #p2 h2{font-size:13px;margin:0 0 4px}
+    #lH{display:none}
+    #chips{gap:4px!important;margin-bottom:4px!important}
+    #chips .chip{font-size:10.5px;padding:1px 8px}
+    #legTable table{font-size:11px;min-width:0}
+    #legTable th,#legTable td{padding:2px 6px}
+    #legTable th{font-size:10px}
+    #legTable td.gnum{width:36px}
+    #legTable td{white-space:nowrap}
+    #legTable th.tlc{padding:0 6px}
+    #legTable td.tcell{min-width:56px;padding:0 6px}
+    #legTable .tlh{height:12px}
+    #legTable .tlh span{font-size:9px}
+    #legTable td.tcell i,#legTable td.tcell .tbar{height:7px}
+    #p2 .pnotes ul,#notes ul{font-size:11px;margin:3px 0 0;padding-left:15px}
+    #notes .lab{font-size:10px}
+    #p2 .pcomp .hint{display:none}
+    #p2 .pcomp .btn{padding:1px 8px;font-size:10.5px}
+    #p2 .stack{height:14px}
+    #p2 .legend{gap:2px 10px;margin-top:6px;font-size:10.5px}
+    #p2 .foot{font-size:10px;margin-top:5px}
+  }
+  @media (min-width:640px) and (max-width:900px) and (orientation:landscape) and (max-height:500px){
+    #legTable td.tcell,#legTable th.tlc{display:none}
+  }
+  @media (min-width:640px) and (max-width:760px) and (orientation:landscape) and (max-height:500px){
+    #legTable tr > :last-child{display:none}
+    #legTable td.mid{padding-right:8px}
+    #p2 .p2grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+    #chips .chip{padding:0 5px;font-size:9.5px;gap:3px}
+    #chips .dot{width:7px;height:7px}
+    #legTable th,#legTable td{padding:1px 5px}
+    #legTable table{font-size:10px}
+    #p2 .card{padding:5px 8px}
+    #p2 .pnotes{display:block}
+    #p2 .legend{gap:1px 8px}
+    #p2 .pcomp .now-row{align-items:center}
     .btn{padding:3px 9px;font-size:12px}
   }
 </style>
@@ -658,10 +708,11 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
   }
   function mtipHide(){mtip.style.opacity=0;}
 
+  function stripW(){return window.matchMedia('(min-width:640px) and (orientation:landscape) and (max-height:500px)').matches?100:0;}
   function renderMap(){
     var host=$('map'); if(!host) return;
     var old=host.querySelector(':scope > svg'); if(old) old.remove();
-    var W=host.clientWidth||600, H=Math.max(300,Math.min(560,Math.round(W*.68))), narrow=W<520;
+    var W=(host.clientWidth||600)-stripW(), H=Math.max(300,Math.min(560,Math.round(W*.68))), narrow=W<520;
     if(window.matchMedia('(min-width:640px) and (orientation:landscape)').matches){H=Math.max(120,host.clientHeight||H);}
     if(mapView.auto){mapView.span=Math.max(mapView0.span,0.23*W/(H*COS));}
     var kx=W/mapView.span, ky=kx/COS; mapK={kx:kx,ky:ky,W:W,H:H};
@@ -903,6 +954,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     var host=$('map'), drag=null;
     host.addEventListener('pointerdown',function(ev){
       if(ev.target.closest&&(ev.target.closest('.mk')||ev.target.closest('.mapov'))) return;
+      if(stripW()&&ev.clientX>host.getBoundingClientRect().right-stripW()) return;
       drag={x:ev.clientX,y:ev.clientY,cx:mapView.cx,cy:mapView.cy,moved:false};
     });
     window.addEventListener('pointermove',function(ev){
@@ -941,8 +993,6 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     window.addEventListener('scroll',upd,{passive:true}); upd();
   })();
 })();
-(function(){var h=document.querySelector('#p1 > header'),p2=document.getElementById('p2');
-  if(h&&p2){var c=h.cloneNode(true); c.setAttribute('aria-hidden','true'); p2.insertBefore(c,p2.firstChild);}})();
 (function(){var l=document.querySelector('#p1 > header .logo'),w=document.querySelector('#rotate .wlc');
   if(l&&w){var c=l.cloneNode(true); c.className='rlogo'; c.alt=''; w.insertBefore(c,w.firstChild);}})();
 </script>
