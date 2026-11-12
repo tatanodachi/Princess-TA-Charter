@@ -215,6 +215,19 @@
   .lbx{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;border:1px solid var(--ring);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;padding:0}
   .lbx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   #map > svg{transition:opacity .25s}
+  #map .notescard{position:absolute;right:112px;bottom:74px;z-index:4;width:min(54%,300px);max-height:46%;overflow:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;box-shadow:0 4px 16px rgba(30,47,49,.18);font-size:11px;line-height:1.4;color:var(--ink)}
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){#map .notescard{width:222px;max-height:58%;bottom:56px;right:108px;font-size:10px;padding:6px 8px}}
+  #map .notescard[hidden]{display:none}
+  #map .nchead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
+  #map .nchead b{font-family:var(--fh);font-size:12px}
+  #map .ncx{border:0;background:transparent;color:var(--ink2);font-size:20px;line-height:1;padding:0 2px;cursor:pointer}
+  #map #notes .lab{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  #map #notes ul{margin:4px 0 0;padding-left:15px;font-size:inherit}
+  #map #notes .mnote{margin:4px 0 0;color:var(--ink2)}
+  #zNotes{position:relative}
+  #zNotes .ndot{display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:1.5px solid var(--surface)}
+  #zNotes.has .ndot{display:block}
+  #zNotes[aria-pressed=true]{background:var(--ink);color:var(--bg)}
   #map .compass{position:absolute;top:10px;right:12px;width:64px;z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--ink);font-size:12px;line-height:1}
   #p1 #map .compass svg{width:10px;height:14px;position:static;inset:auto;right:auto;display:block}
   #map.dim .compass{display:none}
@@ -394,6 +407,7 @@
 
     <section class="card mapcard" aria-labelledby="mH">
       <div id="map">
+        <aside class="notescard" id="notesCard" hidden aria-label="Notes"><div class="nchead"><b id="ncTitle">Notes</b><button type="button" class="ncx" id="ncX" aria-label="Close notes">&times;</button></div><div id="notes" aria-live="polite"></div></aside>
         <div class="compass" aria-hidden="true"><b>N</b><svg viewBox="0 0 10 14" width="10" height="14"><path d="M5 0 L0 12 L5 9 L10 12 Z" fill="currentColor"/></svg></div>
         <h2 id="mH" class="mapov maptitle" title="Drag the map to pan and use the buttons to zoom. Place circles take the color of the leg that arrives there (KP3 is dark, ringed in the color of the final leg that returns to it). Route colors run in sailing order, from yellow (leg 1) to dark purple (leg 6) in a color-blind-safe palette (the numbers on the place circles match the numbers in the table), as listed in the table below the map; later legs are drawn on top (the selected leg or the boat's current leg is brought to the front). The blue dot is the boat position at the tracker time. Click a point or line to select its activity.">Route map</h2>
         <div class="mctl mapov">
@@ -401,6 +415,7 @@
           <button class="btn zb" id="zOut" type="button" aria-label="Zoom out" title="Zoom out">&minus;</button>
           <button class="btn zb" id="zFit" type="button" aria-label="Whole route" title="Whole route"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
           <button class="btn zb" id="zSel" type="button" aria-label="Go to selection / boat" title="Go to selection / boat"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+          <button class="btn zb" id="zNotes" type="button" aria-label="Show notes" aria-pressed="false" title="Notes"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M9 11h6M9 15h6"/></svg><i class="ndot" aria-hidden="true"></i></button>
         </div>
         <div class="locbanner mapov" id="locBanner" hidden>
           <div class="lbart" id="lbArt"></div>
@@ -424,7 +439,7 @@
     </section>
   </section>
 
-  <section class="page" id="p2" aria-label="Page 2: schedule, notes and time composition">
+  <section class="page" id="p2" aria-label="Page 2: schedule and time composition">
     <div class="p2grid">
       <section class="card" aria-labelledby="lH">
         <h2 id="lH" style="margin-bottom:8px">Schedule and timeline</h2>
@@ -432,10 +447,6 @@
         <div style="overflow-x:auto" id="legTable"></div>
       </section>
       <div class="p2side">
-        <section class="card pnotes" aria-labelledby="nH">
-          <h2 id="nH">Notes</h2>
-          <div id="notes" aria-live="polite"></div>
-        </section>
   <section class="card pcomp" aria-labelledby="cH">
     <div class="now-row">
       <div>
@@ -940,7 +951,19 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       if(tx.tips&&tx.tips.length){var ul=el('ul',{id:'minfo-tips'}); tx.tips.forEach(function(s2){ul.appendChild(el('li',null,s2));}); nb.appendChild(ul);}
       else nb.appendChild(el('p',{class:'mnote'},'No extra notes for this activity.'));
     } else nb.appendChild(el('p',{class:'mnote'},'Select a row to see its notes.'));
+    var zn=$('zNotes'); if(zn) zn.classList.toggle('has',!!(tx&&tx.tips&&tx.tips.length));
+    var nt2=$('ncTitle'); if(nt2) nt2.textContent=tx?'Notes':'Notes';
+    if(state.sel!==_lastSel){ _lastSel=state.sel; if(window._setNotes) window._setNotes(state.sel!=null && !!(tx&&tx.tips&&tx.tips.length)); }
   }
+  var _lastSel=null;
+  (function(){
+    var card=$('notesCard'), zn=$('zNotes');
+    function setN(v){card.hidden=!v; zn.setAttribute('aria-pressed',String(v));}
+    window._setNotes=setN;
+    zn.addEventListener('click',function(){setN(card.hidden);});
+    $('ncX').addEventListener('click',function(){setN(false);});
+    ['pointerdown','touchstart','wheel'].forEach(function(ev){card.addEventListener(ev,function(e){e.stopPropagation();},{passive:true});});
+  })();
 
   function renderLegTable(){
     var host=$('legTable'); host.innerHTML='';
