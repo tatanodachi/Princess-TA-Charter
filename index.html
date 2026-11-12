@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1E2F31">
 <link rel="manifest" href="manifest.webmanifest">
+<script>try{var _t=localStorage.getItem("ptaTheme");if(_t==="dark"||_t==="light")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <title>Princess TA Charter</title>
 <meta name="apple-mobile-web-app-title" content="Princess TA Charter">
 <meta name="application-name" content="Princess TA Charter">
@@ -32,8 +33,17 @@
     --c1:#1C6048; --c2:#9B8B70; --c3:#6F9784; --c4:#CDBFA3; --c5:#4C4A4B;
     --good:#1C6048; --accent:#1C6048; --head:#1C6048; --rdone:#1C6048; --rtodo:#9B8B70;
   }
+  :root[data-theme="light"]{color-scheme:light}
+  :root[data-theme="dark"]{color-scheme:dark;
+      --bg:#121C1D; --surface:#1E2F31; --ink:#EFEBE7; --ink2:#D8D8D8; --muted:#99B6AA;
+      --grid:#2E4346; --axis:#46595C; --ring:rgba(239,235,231,.14); --wash:rgba(239,235,231,.07);
+      --q1:#F0B84F; --q2:#4FC08F; --q3:#E8896A; --q4:#6CC3D6; --q5:#CDA46A; --q6:#EFEBE7;
+      --qt1:#1E2F31; --qt2:#1E2F31; --qt3:#101820; --qt4:#1E2F31; --qt5:#1E2F31; --qt6:#1E2F31;
+      --c1:#3F9C77; --c2:#9B8B70; --c3:#99B6AA; --c4:#CDBFA3; --c5:#8A8786;
+      --good:#6CC29C; --accent:#99B6AA; --head:#99B6AA; --rdone:#4FC08F; --rtodo:#C2B08E;
+  }
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-theme="light"]){
       --bg:#121C1D; --surface:#1E2F31; --ink:#EFEBE7; --ink2:#D8D8D8; --muted:#99B6AA;
       --grid:#2E4346; --axis:#46595C; --ring:rgba(239,235,231,.14); --wash:rgba(239,235,231,.07);
       --q1:#F0B84F; --q2:#4FC08F; --q3:#E8896A; --q4:#6CC3D6; --q5:#CDA46A; --q6:#EFEBE7;
@@ -130,7 +140,8 @@
   .stop li{margin:2px 0}
   /* map */
   :root{--sea:#DCE6E1;--land:#EFEBE7;--landline:#9B8B70}
-  @media (prefers-color-scheme: dark){:root{--sea:#182628;--land:#2B3A37;--landline:#5E6A5C}}
+  :root[data-theme="dark"]{--sea:#182628;--land:#2B3A37;--landline:#5E6A5C}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sea:#182628;--land:#2B3A37;--landline:#5E6A5C}}
   #map{position:relative;border:1px solid var(--ring);border-radius:10px;overflow:hidden;user-select:none}
   #map svg{display:block;width:100%}
   #map svg .mk:focus-visible{outline:none}
@@ -400,8 +411,10 @@
   #rotate{padding-left:calc(24px + env(safe-area-inset-left,0px));padding-right:calc(24px + env(safe-area-inset-right,0px))}
   /* first-visit tips (landscape phone only) */
   .tour{display:none}
+  #zHelp{display:none}
   @media (min-width:640px) and (orientation:landscape) and (max-height:500px){
     .tour:not([hidden]){display:block}
+    #zHelp{display:inline-flex}
     #map .tour{position:absolute;inset:0;z-index:7;pointer-events:none}
     #map .tdim{position:absolute;top:0;left:0;bottom:0;right:100px;background:var(--surface);opacity:.68;pointer-events:auto}
     #map .tcard{position:absolute;pointer-events:auto;width:236px;background:rgba(255,255,255,.58);color:var(--ink);border:1px solid rgba(255,255,255,.7);border-radius:14px;padding:10px 12px;box-shadow:0 8px 26px rgba(30,47,49,.22),inset 0 1px 0 rgba(255,255,255,.8);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);font-size:12px;line-height:1.45}
@@ -427,6 +440,11 @@
     #map .tnext{background:var(--ink);color:var(--bg);border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:600;padding:5px 16px;cursor:pointer}
     #map.tour-s2 .vtrack{box-shadow:0 0 0 2px var(--accent),0 0 0 6px rgba(30,47,49,.08);border-radius:12px;background:var(--surface)}
   }
+  #p1 #map #zTheme .ico-sun{display:none}
+  :root[data-theme="dark"] #p1 #map #zTheme .ico-moon{display:none}
+  :root[data-theme="dark"] #p1 #map #zTheme .ico-sun{display:block}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #p1 #map #zTheme .ico-moon{display:none}:root:not([data-theme="light"]) #p1 #map #zTheme .ico-sun{display:block}}
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){#map .mctl.mapov{gap:4px}#map .mapov .btn.zb{height:30px}}
 </style>
 </head>
 <body>
@@ -463,6 +481,8 @@
           <button class="btn zb" id="zFit" type="button" aria-label="Whole route" title="Whole route"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
           <button class="btn zb" id="zSel" type="button" aria-label="Go to selection / boat" title="Go to selection / boat"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
           <button class="btn zb" id="zNotes" type="button" aria-label="Show notes" aria-pressed="false" title="Notes"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h10l4 4v14H5z"/><path d="M9 11h6M9 15h6"/></svg><i class="ndot" aria-hidden="true"></i></button>
+          <button class="btn zb" id="zHelp" type="button" aria-label="Show tips" title="Tips"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8"/><path d="M12 17h.01"/></svg></button>
+          <button class="btn zb" id="zTheme" type="button" aria-label="Switch to dark mode" title="Light / dark"><svg class="ico-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><svg class="ico-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
         </div>
         <div class="locbanner mapov" id="locBanner" hidden>
           <div class="lbart" id="lbArt"></div>
@@ -1151,6 +1171,8 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       tour.classList.toggle('s1',step===0); tour.classList.toggle('s2',step===1);
       map.classList.toggle('tour-s2',step===1);
     }
+    function reopen(){step=0;render();tour.hidden=false;}
+    var zh=$('zHelp'); if(zh) zh.addEventListener('click',reopen);
     function close(){tour.hidden=true; map.classList.remove('tour-s2'); mark();}
     function start(){ if(shown||done()||!mq.matches) return; shown=true; step=0; render(); tour.hidden=false; }
     $('tNext').addEventListener('click',function(){ if(step>=STEPS.length-1){close();} else {step++;render();} });
@@ -1159,6 +1181,21 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     ['pointerdown','touchstart','wheel'].forEach(function(ev){tour.addEventListener(ev,function(e){e.stopPropagation();},{passive:true});});
     if(mq.addEventListener) mq.addEventListener('change',start); else if(mq.addListener) mq.addListener(start);
     setTimeout(start,400);
+  })();
+
+
+  (function(){
+    var b=$('zTheme'); if(!b||!window.matchMedia) return;
+    var mq=window.matchMedia('(prefers-color-scheme: dark)'), root=document.documentElement;
+    function eff(){var t=root.getAttribute('data-theme'); return t||(mq.matches?'dark':'light');}
+    function sync(){var d=eff()==='dark'; b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode'); b.title=d?'Light mode':'Dark mode';}
+    b.addEventListener('click',function(){
+      var n=eff()==='dark'?'light':'dark'; root.setAttribute('data-theme',n);
+      try{localStorage.setItem('ptaTheme',n);}catch(e){}
+      sync();
+    });
+    if(mq.addEventListener) mq.addEventListener('change',sync);
+    sync();
   })();
 
   // ---- events
