@@ -398,6 +398,25 @@
   body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   .dots{right:calc(5px + env(safe-area-inset-right,0px))}
   #rotate{padding-left:calc(24px + env(safe-area-inset-left,0px));padding-right:calc(24px + env(safe-area-inset-right,0px))}
+  /* first-visit tips (landscape phone only) */
+  .tour{display:none}
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){
+    .tour:not([hidden]){display:block}
+    #map .tour{position:absolute;inset:0;z-index:7;pointer-events:none}
+    #map .tdim{position:absolute;top:0;left:0;bottom:0;right:100px;background:var(--surface);opacity:.68;pointer-events:auto}
+    #map .tcard{position:absolute;pointer-events:auto;width:236px;background:rgba(255,255,255,.58);color:var(--ink);border:1px solid rgba(255,255,255,.7);border-radius:14px;padding:10px 12px;box-shadow:0 8px 26px rgba(30,47,49,.22),inset 0 1px 0 rgba(255,255,255,.8);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);font-size:12px;line-height:1.45}
+    @supports (background:color-mix(in srgb,red 50%,transparent)){#map .tcard{background:color-mix(in srgb,var(--surface) 58%,transparent);border-color:color-mix(in srgb,var(--surface) 70%,transparent)}}
+    #map .tour.s1 .tcard{left:calc((100% - 100px)/2);top:50%;transform:translate(-50%,-50%)}
+    #map .tour.s2 .tcard{right:116px;top:50%;transform:translateY(-50%)}
+    #map .tour.s2 .tcard::after{content:'';position:absolute;right:-9px;top:50%;width:9px;height:18px;background:rgba(255,255,255,.58);transform:translateY(-50%);clip-path:polygon(0 0,100% 50%,0 100%)}
+    @supports (background:color-mix(in srgb,red 50%,transparent)){#map .tour.s2 .tcard::after{background:color-mix(in srgb,var(--surface) 58%,transparent)}}
+    #map .tstep{font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+    #map .ttxt{margin:0 0 8px}
+    #map .tbtns{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    #map .tskip{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;padding:4px 2px;cursor:pointer}
+    #map .tnext{background:var(--ink);color:var(--bg);border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:600;padding:5px 16px;cursor:pointer}
+    #map.tour-s2 .vtrack{box-shadow:0 0 0 2px var(--accent),0 0 0 6px rgba(30,47,49,.08);border-radius:12px;background:var(--surface)}
+  }
 </style>
 </head>
 <body>
@@ -417,6 +436,14 @@
     <section class="card mapcard" aria-labelledby="mH">
       <div id="map">
         <aside class="notescard" id="notesCard" hidden aria-label="Notes"><div class="nchead"><b id="ncTitle">Notes</b><button type="button" class="ncx" id="ncX" aria-label="Close notes">&times;</button></div><div id="notes" aria-live="polite"></div></aside>
+        <div class="tour" id="tour" hidden role="dialog" aria-modal="false" aria-label="Quick tips">
+          <div class="tdim"></div>
+          <div class="tcard" id="tcard">
+            <div class="tstep" id="tStep">1 / 2</div>
+            <p class="ttxt" id="tTxt"></p>
+            <div class="tbtns"><button type="button" class="tskip" id="tSkip">Skip</button><button type="button" class="tnext" id="tNext">Next</button></div>
+          </div>
+        </div>
         <div class="compass" aria-hidden="true"><b>N</b><svg viewBox="0 0 10 14" width="10" height="14"><path d="M5 0 L0 12 L5 9 L10 12 Z" fill="currentColor"/></svg></div>
         <h2 id="mH" class="mapov maptitle" title="Drag the map to pan and use the buttons to zoom. Place circles take the color of the leg that arrives there (KP3 is dark, ringed in the color of the final leg that returns to it). Route colors run in sailing order, from yellow (leg 1) to dark purple (leg 6) in a color-blind-safe palette (the numbers on the place circles match the numbers in the table), as listed in the table below the map; later legs are drawn on top (the selected leg or the boat's current leg is brought to the front). The blue dot is the boat position at the tracker time. Click a point or line to select its activity.">Route map</h2>
         <div class="mctl mapov">
@@ -1095,6 +1122,32 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       var lon=mapView.cx+(m[0]-mapK.W/2)/mapK.kx, la=mapView.cy-(m[1]-mapK.H/2)/mapK.ky;
       zoomAround(m[0],m[1],mapView.span*f,lon,la);
     },{passive:false});
+  })();
+
+
+  (function(){
+    var tour=$('tour'), map=$('map'); if(!tour||!window.matchMedia) return;
+    var mq=window.matchMedia('(min-width:640px) and (orientation:landscape) and (max-height:500px)');
+    var KEY='ptaTourDone', step=0, shown=false;
+    var STEPS=['You can select a route or location on the map for additional information.','Slide this to see the route information at any time.'];
+    function done(){try{return localStorage.getItem(KEY)==='1';}catch(e){return false;}}
+    function mark(){try{localStorage.setItem(KEY,'1');}catch(e){}}
+    function render(){
+      $('tStep').textContent=(step+1)+' / '+STEPS.length;
+      $('tTxt').textContent=STEPS[step];
+      $('tNext').textContent=step===STEPS.length-1?'Got it':'Next';
+      $('tSkip').style.visibility=step===STEPS.length-1?'hidden':'visible';
+      tour.classList.toggle('s1',step===0); tour.classList.toggle('s2',step===1);
+      map.classList.toggle('tour-s2',step===1);
+    }
+    function close(){tour.hidden=true; map.classList.remove('tour-s2'); mark();}
+    function start(){ if(shown||done()||!mq.matches) return; shown=true; step=0; render(); tour.hidden=false; }
+    $('tNext').addEventListener('click',function(){ if(step>=STEPS.length-1){close();} else {step++;render();} });
+    $('tSkip').addEventListener('click',close);
+    document.addEventListener('keydown',function(e){ if(!tour.hidden&&e.key==='Escape') close(); });
+    ['pointerdown','touchstart','wheel'].forEach(function(ev){tour.addEventListener(ev,function(e){e.stopPropagation();},{passive:true});});
+    if(mq.addEventListener) mq.addEventListener('change',start); else if(mq.addListener) mq.addListener(start);
+    setTimeout(start,400);
   })();
 
   // ---- events
