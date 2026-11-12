@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1E2F31">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Princess TA Charter</title>
 <meta name="apple-mobile-web-app-title" content="Princess TA Charter">
 <meta name="application-name" content="Princess TA Charter">
@@ -389,6 +394,10 @@
     #p2 .pcomp .now-row{align-items:center}
     .btn{padding:3px 9px;font-size:12px}
   }
+  /* full-screen / notch safe areas (iPhone standalone) */
+  body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .dots{right:calc(5px + env(safe-area-inset-right,0px))}
+  #rotate{padding-left:calc(24px + env(safe-area-inset-left,0px));padding-right:calc(24px + env(safe-area-inset-right,0px))}
 </style>
 </head>
 <body>
