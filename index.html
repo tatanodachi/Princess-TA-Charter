@@ -445,6 +445,22 @@
   :root[data-theme="dark"] #p1 #map #zTheme .ico-sun{display:block}
   @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #p1 #map #zTheme .ico-moon{display:none}:root:not([data-theme="light"]) #p1 #map #zTheme .ico-sun{display:block}}
   @media (min-width:640px) and (orientation:landscape) and (max-height:500px){#map .mctl.mapov{gap:4px}#map .mapov .btn.zb{height:30px}}
+  /* short landscape screens: shrink the control column, then let it scroll */
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){
+    #p1 #map .mctl.mapov{justify-content:flex-start;max-height:calc(100% - 16px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    #p1 #map .mctl.mapov::-webkit-scrollbar{display:none}
+    #p1 #map .mctl.mapov > .btn{flex:none}
+  }
+  @media (min-width:640px) and (orientation:landscape) and (max-height:359px){
+    #map .mctl.mapov{gap:3px}
+    #map .mapov .btn.zb{height:26px;width:34px}
+    #p1 #map .btn.zb svg{width:14px;height:14px}
+  }
+  @media (min-width:640px) and (orientation:landscape) and (max-height:329px){
+    #map .mctl.mapov{gap:2px}
+    #map .mapov .btn.zb{height:22px;width:32px}
+    #p1 #map .btn.zb svg{width:13px;height:13px}
+  }
 </style>
 </head>
 <body>
