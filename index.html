@@ -1133,8 +1133,14 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       var d=el('div',{class:'dyk','aria-hidden':'true'}), bub=el('div',{class:'bub'});
       bub.appendChild(el('b',null,'Did you know?')); bub.appendChild(document.createTextNode(text));
       d.appendChild(m); d.appendChild(bub); d.style.visibility='hidden'; $('map').appendChild(d); dk=d; dkKey=key; dkPos();
-      if(d.animate){d.animate(rmN()?[{opacity:0},{opacity:1}]:[{opacity:0,transform:'scale(.82)'},{opacity:1,transform:'scale(1)'}],{duration:rmN()?160:300,easing:'cubic-bezier(.2,.8,.2,1)'});
-        d.style.transformOrigin='right bottom';}
+      if(d.animate){
+        if(rmN()){ m.animate([{opacity:0},{opacity:1}],{duration:160}); bub.animate([{opacity:0},{opacity:1}],{duration:160,delay:120,fill:'backwards'}); }
+        else{
+          bub.style.transformOrigin='left bottom'; m.style.transformOrigin='50% 100%';
+          m.animate([{opacity:0,transform:'translateY(12px) scale(.55)'},{opacity:1,transform:'translateY(-3px) scale(1.06)',offset:.7},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:340,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});
+          bub.animate([{opacity:0,transform:'scale(.2)'},{opacity:1,transform:'scale(1.04)',offset:.75},{opacity:1,transform:'scale(1)'}],{duration:340,delay:300,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});
+        }
+      }
     }
     window._dykHide=function(){dkHide();};
     window._dykSync=function(){
