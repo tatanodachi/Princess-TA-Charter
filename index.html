@@ -1376,7 +1376,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       var w=document.createElement('div');
       w.style.cssText='position:absolute;left:'+(-offX)+'px;top:0;width:'+W+'px;height:'+H+'px;';
       els.forEach(function(e,i){
-        var c=e.cloneNode(true); c.removeAttribute('id'); var ids=c.querySelectorAll('[id]'); for(var k=0;k<ids.length;k++)ids[k].removeAttribute('id');
+        var c=e.cloneNode(true); c.setAttribute('data-gclone','1');
         var im=c.querySelectorAll('img'); for(var m=0;m<im.length;m++){im[m].style.filter='none';}
         var r=rects[i];
         c.style.cssText+=';position:absolute;left:'+(r.left-L)+'px;top:'+(r.top-Tp)+'px;width:'+r.width+'px;height:'+r.height+'px;right:auto;bottom:auto;margin:0;transform:none;animation:none;max-height:none;visibility:visible;box-shadow:none;';
