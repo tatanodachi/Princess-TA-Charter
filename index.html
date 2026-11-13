@@ -325,7 +325,7 @@
     #legTable td,#legTable th{padding:4px 8px}
     #legTable th.tlc{padding:0 10px}
     .dots{display:flex;flex-direction:column;gap:10px;position:fixed;right:5px;top:50%;transform:translateY(-50%);z-index:5}
-    .dots button{width:9px;height:9px;padding:0;border-radius:50%;border:1px solid var(--ink2);background:transparent;cursor:pointer}
+    .dots button{width:9px;height:9px;padding:0;border-radius:9px;border:1px solid var(--ink2);background:transparent;cursor:pointer}
     .dots button[aria-current=true]{background:var(--ink)}
     .dots button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   }
@@ -496,6 +496,9 @@
   @media (orientation:landscape) and (max-height:500px){#p2 .pcomp #btnTable{min-width:7.5em}}
   html,body{overflow-x:clip}
   .wrap{overflow-x:clip}
+  @media (min-width:640px) and (orientation:landscape){html{scroll-snap-type:y mandatory}.page{scroll-snap-stop:always}}
+  #p2.fitclamp{overflow-y:auto;max-height:100vh;max-height:100dvh}
+  #p2 .p2side > .foot{margin:0;padding:0 4px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 </head>
@@ -557,7 +560,6 @@
       <div class="infobar" aria-live="polite" title="Planned position follows the schedule. The actual position may differ with sea conditions and timing.">
         <div id="mapInfo"></div>
       </div>
-      <div class="note" id="clockNote"></div>
     </section>
   </section>
 
@@ -579,9 +581,9 @@
     </div>
     <div id="comp" style="margin-top:12px"></div>
   </section>
+      <p class="foot" id="routeNote">Routes are indicative and may change with sea and weather conditions. The boat marker shows the planned position from the schedule; the actual position may differ.</p>
       </div>
     </div>
-    <p class="foot">Routes are indicative and may change with sea and weather conditions. The boat marker shows the planned position from the schedule; the actual position may differ.</p>
   </section>
 
   <nav class="dots" aria-label="Pages"><button type="button" data-p="p1" aria-label="Page 1: overview and map" aria-current="true"></button><button type="button" data-p="p2" aria-label="Page 2: schedule and notes"></button></nav>
@@ -634,7 +636,7 @@
     9:'\u201CKalong\u201D is Indonesian for \u201Cflying fox\u201D, the giant fruit bats. At dusk they leave the mangroves and head toward Flores to feed.'};
   STOPS.forEach(function(x){x.fact=DYK[x.id]||'';});
 
-  var state = {t:T0, sel:null, filter:'all', table:false};
+  var state = {t:T0, sel:null, filter:'all', table:false, nowNote:''};
   var $ = function(id){return document.getElementById(id);};
   function el(tag,attrs,txt){var e=document.createElement(tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e;}
 
@@ -1058,6 +1060,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
   }
   function renderMapInfo(foc,bt){
     renderBanner(foc);
+    if(foc) state.nowNote='';
     var box=$('mapInfo'); box.innerHTML='';
     var h=el('span',{class:'lab'}), t=el('span',{class:'val'}), p=el('span',null);
     if(foc&&foc.leg!=null){
@@ -1067,9 +1070,12 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       var Lc=LOC[foc.loc];
       h.textContent='Selected location'; t.textContent=Lc.n;
     } else {
+      if(state.nowNote){ h.textContent='Notice'; t.textContent=state.nowNote; }
+      else {
       h.textContent='Planned position ('+fmt(state.t)+')';
       if(bt.leg!=null){var Lb=LEGS[bt.leg]; t.textContent='Sailing: '+nm(Lb.from,'from')+' → '+nm(Lb.to,'to');}
       else {t.textContent=(bt.at==='kp3'?(state.t>=T1?'Back at ':'At the pier '):'At ')+LOC[bt.at].n.replace(' Port','');}
+      }
     }
     box.appendChild(h); box.appendChild(t); box.appendChild(p);
     var nb=$('notes');
@@ -1435,12 +1441,12 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       tick(at==='kp3'?2:1);
     }};
   })();
-  $('slider').addEventListener('input',function(){releaseSel();state.t=+this.value;$('clockNote').textContent='';renderNow();renderGantt();renderList();Hp.check();});
-  $('btnStart').addEventListener('click',function(){releaseSel();state.t=T0;$('clockNote').textContent='';renderNow();renderGantt();renderList();Hp.check();});
+  $('slider').addEventListener('input',function(){releaseSel();state.t=+this.value;state.nowNote='';renderNow();renderGantt();renderList();Hp.check();});
+  $('btnStart').addEventListener('click',function(){releaseSel();state.t=T0;state.nowNote='';renderNow();renderGantt();renderList();Hp.check();});
   $('btnNow').addEventListener('click',function(){
     var d=new Date(), m=(d.getUTCHours()*60+d.getUTCMinutes()+480)%1440, c=Math.min(Math.max(m,T0),T1);
     releaseSel(); state.t=c;
-    $('clockNote').textContent = (c!==m) ? 'Current Labuan Bajo time (WITA '+fmt(m)+') is outside the 11.00–19.30 schedule, shown at the nearest limit.' : 'Using Labuan Bajo time (WITA '+fmt(m)+').';
+    state.nowNote = (c!==m) ? 'Current Labuan Bajo time (WITA '+fmt(m)+') is outside the 11.00–19.30 schedule, shown at the nearest limit.' : 'Using Labuan Bajo time (WITA '+fmt(m)+').';
     renderNow();renderGantt();renderList();Hp.check();
   });
   $('btnTable').addEventListener('click',function(){state.table=!state.table;renderComp();});
@@ -1456,8 +1462,16 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       var best=0, mid=window.innerHeight/2;
       pages.forEach(function(pg,i){var r=pg.getBoundingClientRect(); if(r.top<=mid) best=i;});
       dots.forEach(function(b,i){b.setAttribute('aria-current',String(i===best));});
+      // active dot stretches into a vertical pill, following the scroll position between the two pages
+      var span=pages[1].offsetTop-pages[0].offsetTop, y=window.pageYOffset||document.documentElement.scrollTop||0;
+      var pr=span>0?Math.min(1,Math.max(0,(y-pages[0].offsetTop)/span)):(best?1:0);
+      dots.forEach(function(b,i){
+        var k=i===0?1-pr:pr;
+        b.style.height=(9+13*k).toFixed(2)+'px';
+        b.style.background='color-mix(in srgb, var(--ink) '+Math.round(k*100)+'%, transparent)';
+      });
     }
-    window.addEventListener('scroll',upd,{passive:true}); upd();
+    window.addEventListener('scroll',upd,{passive:true}); window.addEventListener('resize',upd); upd();
   })();
 })();
 (function(){var l=document.querySelector('#p1 > header .logo'),w=document.querySelector('#rotate .wlc');
@@ -1546,6 +1560,37 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     anims.forEach(function(a){a.onfinish=function(){ finished++; if(finished===anims.length&&!done){done=true; if(cb)cb(); cleanup();} };});
     return {cancel:function(){ if(done)return; done=true; cancelled=true; anims.forEach(function(a){try{a.cancel();}catch(e){}}); cleanup(); }};
   };
+})();
+</script>
+<script>
+/* Page 2 fit-to-screen: shrink content (never enlarge) so it fits one screen height; floor 0.7, below that the page scrolls inside. */
+(function(){
+  var MIN=0.7, p2=document.getElementById('p2'), busy=false, raf=0;
+  if(!p2||!('zoom' in document.documentElement.style))return;
+  function kids(){return [].slice.call(p2.children).filter(function(k){return k.offsetParent!==null||k.getClientRects().length;});}
+  function fit(){
+    raf=0; if(busy)return; busy=true;
+    try{
+      var ks=kids(); ks.forEach(function(k){k.style.zoom='';}); p2.classList.remove('fitclamp');
+      var landscape=window.matchMedia('(min-width:640px) and (orientation:landscape)').matches;
+      if(!landscape||!p2.offsetHeight){return;}
+      var vh=window.innerHeight, need=p2.scrollHeight;
+      if(need<=vh+1)return;
+      function fits(z){ks.forEach(function(k){k.style.zoom=z;});return p2.scrollHeight<=vh;}
+      var lo=MIN, hi=1, best=null;
+      if(fits(MIN)){ for(var i=0;i<8;i++){var mid=(lo+hi)/2; if(fits(mid)){lo=mid;best=mid;}else{hi=mid;}} best=Math.floor((best||lo)*1000)/1000; }
+      else { best=MIN; p2.classList.add('fitclamp'); }
+      ks.forEach(function(k){k.style.zoom=best;});
+    }finally{busy=false;}
+  }
+  function sched(){if(!raf)raf=requestAnimationFrame(fit);}
+  window.addEventListener('resize',sched);
+  window.addEventListener('orientationchange',function(){setTimeout(sched,200);});
+  if(window.visualViewport)window.visualViewport.addEventListener('resize',sched);
+  window.addEventListener('load',sched);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(sched);
+  if(window.MutationObserver){var mo=new MutationObserver(sched);['legTable','comp','chips'].forEach(function(id){var e=document.getElementById(id);if(e)mo.observe(e,{childList:true,subtree:true});});}
+  sched();
 })();
 </script>
 <script>if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
