@@ -1,5 +1,5 @@
 /* Princess TA Charter - offline support */
-var CACHE='pta-3414daeb29';
+var CACHE='pta-a1525386ef';
 var FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 self.addEventListener('install',function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(FILES);}).then(function(){return self.skipWaiting();}));
