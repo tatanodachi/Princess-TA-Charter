@@ -7,7 +7,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1E2F31">
-<link rel="manifest" href="manifest.webmanifest">
 <script>try{var _t=localStorage.getItem("ptaTheme");if(_t==="dark"||_t==="light")document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <title>Princess TA Charter</title>
 <meta name="apple-mobile-web-app-title" content="Princess TA Charter">
@@ -256,14 +255,15 @@
   .wrap{padding-bottom:24px}
   #rotate{display:none}
   @media not ((min-width:640px) and (orientation:landscape)){
-    html,body{background:#1E2F31!important;padding:0!important;min-height:100%;overscroll-behavior:none}
-    #rotate{display:flex;position:fixed;top:0;left:0;right:0;bottom:-120px;z-index:50;background:#1E2F31;color:#EFEBE7;overflow:auto;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px 24px 144px}
+    html{background:radial-gradient(circle at 18% 12%,rgba(28,96,72,.65),transparent 55%),radial-gradient(circle at 88% 92%,rgba(155,139,112,.38),transparent 55%),#1E2F31!important;background-repeat:no-repeat!important;background-size:100% 100vh!important;background-size:100% calc(100lvh + 140px)!important;min-height:100%;overscroll-behavior:none}
+    body{background:transparent!important;padding:0!important}
+    #rotate{display:flex;position:fixed;inset:0;z-index:50;background:#1E2F31;color:#EFEBE7;overflow:auto;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
     #rotate svg{width:64px;height:64px;margin-top:10px;transform:scaleX(-1);stroke:#EFEBE7;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
     #rotate b{font-size:18px}
     #rotate span{color:#B9C9C2;font-size:14px;max-width:280px}
     #rotate .rlogo{height:84px;width:auto;margin-bottom:6px}
     #rotate .wlc{display:flex;flex-direction:column;align-items:center;gap:8px;max-width:320px;padding-bottom:18px;margin-bottom:4px;border-bottom:1px solid rgba(239,235,231,.18)}
-    #rotate{background:radial-gradient(circle at 18% 12%,rgba(28,96,72,.65),transparent 55%),radial-gradient(circle at 88% 92%,rgba(155,139,112,.38),transparent 55%),#1E2F31}
+    #rotate{background:transparent}
     #rotate .wlc{background:rgba(239,235,231,.08);border:1px solid rgba(239,235,231,.2);border-radius:18px;padding:20px 18px 16px;box-shadow:0 8px 28px rgba(0,0,0,.25), inset 0 1px 0 rgba(239,235,231,.22);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);border-bottom:1px solid rgba(239,235,231,.2)}
     #rotate .wt{font-family:var(--fh);font-size:22px;font-weight:600;line-height:1.25;color:#EFEBE7}
     #rotate .kpis{list-style:none;margin:8px 0 0;padding:12px 0 0;border-top:1px solid rgba(239,235,231,.18);display:flex;flex-direction:column;gap:2px;align-self:stretch;align-items:center;font-size:11.5px;line-height:1.45;color:#B9C9C2;text-align:center}
@@ -463,6 +463,7 @@
     #p1 #map .btn.zb svg{width:13px;height:13px}
   }
 </style>
+<link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="rotate" role="alert"><div class="wlc"><b class="wt">Welcome aboard Princess&nbsp;TA</b><p class="wm">We are delighted to have you with us on this island-hopping cruise in Labuan Bajo, hosted by Vasanta Group.</p><p class="wm">Wishing you a safe and memorable journey with us.</p><ul class="kpis" id="kpis" aria-label="Cruise summary"></ul></div><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="22" y="16" width="20" height="36" rx="4"/><rect x="29.2" y="20" width="5.6" height="2.4" rx="1.2" fill="#EFEBE7" stroke="none"/><path d="M27 48.2h10" stroke-width="1.7"/><path d="M12 14a26 26 0 0 1 22-6M34 8l-6-5M34 8l-6 5"/></svg><b>Please rotate your device</b><span>This dashboard is designed for landscape. Turn your phone sideways to continue.</span></div>
