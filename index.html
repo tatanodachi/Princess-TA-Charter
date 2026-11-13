@@ -1054,7 +1054,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     function fly(opening,cb){
       if(!card.animate){cb&&cb();return;}
       if(!rmN()&&window.genieFly){
-        var gc=window.genieFly($('map'),[card],zn,opening,380,function(){na=null; cb&&cb();});
+        var gc=window.genieFly($('map'),[card],zn,opening,850,function(){na=null; cb&&cb();});
         if(gc){na=gc;return;}
       }
       var mr=$('map').getBoundingClientRect(), cr=card.getBoundingClientRect(), br=zn.getBoundingClientRect();
@@ -1269,7 +1269,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       if(!g.animate){cb&&cb();return;}
       anim=true;
       if(!rm()&&window.genieFly){
-        var dT=440, dk2=[{opacity:0},{opacity:.68}]; if(!opening)dk2.reverse();
+        var dT=950, dk2=[{opacity:0},{opacity:.68}]; if(!opening)dk2.reverse();
         var dd=d.animate(dk2,{duration:dT,easing:'ease',fill:'both'});
         var gc=window.genieFly(map,[$('tmas'),$('tcard')],$('zHelp'),opening,dT,function(){anim=false; try{dd.cancel();}catch(e){} try{d.getAnimations().forEach(function(x){x.cancel();});}catch(e){} cb&&cb();});
         if(gc) return; try{dd.cancel();}catch(e){}
@@ -1383,8 +1383,8 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       });
       return w;
     }
-    var N=28, K=16, cx=L+W/2, sign=(tx>=cx)?1:-1, d=.42, oy=ty-Tp, txl=tx-L, anims=[];
-    function ease(q){return Math.pow(q,2);}
+    var N=28, K=16, cx=L+W/2, sign=(tx>=cx)?1:-1, d=.5, oy=ty-Tp, txl=tx-L, anims=[];
+    function ease(q){return Math.pow(q,1.5);}
     function bpos(xb,t,ub){var q=Math.max(0,Math.min(1,(t-d*ub)/(1-d))); var e=ease(q); return {X:xb+(txl-xb)*e,e:e};}
     var xs=[],us=[]; for(var b=0;b<=N;b++){xs.push(W*b/N); us.push(sign>0?1-b/N:b/N);}
     for(var i=0;i<N;i++){
