@@ -1065,11 +1065,12 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
         else nb.appendChild(el('p',{class:'mnote'},'No extra notes for this activity.'));
       } else nb.appendChild(el('p',{class:'mnote'},'Select a row to see its notes.'));
     }
-    var nc0=$('notesCard'), closing=(state.sel!==_lastSel)&&!(state.sel!=null&&tx&&tx.tips&&tx.tips.length)&&nc0&&!nc0.hidden;
+    var keepN=!!window._keepNotes, nc0=$('notesCard'), closing=(state.sel!==_lastSel)&&!keepN&&!(state.sel!=null&&tx&&tx.tips&&tx.tips.length)&&nc0&&!nc0.hidden;
     if(closing){ window._pendingNotes=fillNotes; } else { window._pendingNotes=null; fillNotes(); }
     var zn=$('zNotes'); if(zn) zn.classList.toggle('has',!!(tx&&tx.tips&&tx.tips.length));
     var nt2=$('ncTitle'); if(nt2) nt2.textContent=tx?'Notes':'Notes';
-    if(state.sel!==_lastSel){ _lastSel=state.sel; if(window._setNotes) window._setNotes(state.sel!=null && !!(tx&&tx.tips&&tx.tips.length)); }
+    if(state.sel!==_lastSel){ _lastSel=state.sel; if(window._setNotes) window._setNotes(keepN || (state.sel!=null && !!(tx&&tx.tips&&tx.tips.length))); }
+    window._keepNotes=false;
     if(window._dykSync) window._dykSync();
   }
   var _lastSel=null;
@@ -1386,11 +1387,12 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
 
   // ---- events
   $('lbClose').addEventListener('click',function(){state.sel=null;renderGantt();renderList();});
-  $('slider').addEventListener('input',function(){state.t=+this.value;$('clockNote').textContent='';renderNow();renderGantt();renderList();});
-  $('btnStart').addEventListener('click',function(){state.t=T0;$('clockNote').textContent='';renderNow();renderGantt();renderList();});
+  function releaseSel(){ if(state.sel!=null){ state.sel=null; window._keepNotes=true; } }
+  $('slider').addEventListener('input',function(){releaseSel();state.t=+this.value;$('clockNote').textContent='';renderNow();renderGantt();renderList();});
+  $('btnStart').addEventListener('click',function(){releaseSel();state.t=T0;$('clockNote').textContent='';renderNow();renderGantt();renderList();});
   $('btnNow').addEventListener('click',function(){
     var d=new Date(), m=(d.getUTCHours()*60+d.getUTCMinutes()+480)%1440, c=Math.min(Math.max(m,T0),T1);
-    state.t=c;
+    releaseSel(); state.t=c;
     $('clockNote').textContent = (c!==m) ? 'Current Labuan Bajo time (WITA '+fmt(m)+') is outside the 11.00–19.30 schedule, shown at the nearest limit.' : 'Using Labuan Bajo time (WITA '+fmt(m)+').';
     renderNow();renderGantt();renderList();
   });
