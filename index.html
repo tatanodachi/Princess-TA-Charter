@@ -421,14 +421,13 @@
   #map .tour.s2 .tcard{right:var(--s2r,116px);top:var(--s2t,50%);transform:translateY(-50%)}
   #map .tour.s2 .tcard::after{content:'';position:absolute;right:-9px;top:50%;width:9px;height:18px;background:rgba(255,255,255,.58);transform:translateY(-50%);clip-path:polygon(0 0,100% 50%,0 100%)}
   @supports (background:color-mix(in srgb,red 50%,transparent)){#map .tour.s2 .tcard::after{background:color-mix(in srgb,var(--surface) 58%,transparent)}}
-  #map .tmas{display:block;position:absolute;height:var(--mh);aspect-ratio:187/190;width:auto;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(30,47,49,.25));animation:tbob 2.4s ease-in-out infinite}
-  #map .tmas img{display:block;height:100%;width:auto}
+  #map .tmas{display:block;position:absolute;height:var(--mh);aspect-ratio:187/190;width:auto;pointer-events:none;animation:tbob 2.4s ease-in-out infinite}
+  #map .tmas img{display:block;height:100%;width:auto;filter:drop-shadow(0 3px 5px rgba(30,47,49,.25))}
   #map .tour.s1 .tmas{top:50%;left:calc(var(--cx,50%) - var(--cw)/2 - var(--mh)*.984 - 4px)}
   #map .tour.s2 .tmas{top:var(--s2t,50%);right:calc(var(--s2r,116px) + var(--cw) + 6px)}
   @keyframes tbob{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 4px))}}
-  #map .tblink{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;animation:tblink 4.2s infinite}
-  @keyframes tblink{0%,91%{opacity:0}92%,95%{opacity:1}96%,100%{opacity:0}}
-  @media (prefers-reduced-motion:reduce){#map .tmas{animation:none;transform:translateY(-50%)}#map .tblink{animation:none}}
+  #map .tblink{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0}
+  @media (prefers-reduced-motion:reduce){#map .tmas{animation:none;transform:translateY(-50%)}}
   #map .tstep{font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
   #map .ttxt{margin:0 0 8px}
   #map .tbtns{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -1274,6 +1273,24 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
 })();
 (function(){var l=document.querySelector('#p1 > header .logo'),w=document.querySelector('#rotate .wlc');
   if(l&&w){var c=l.cloneNode(true); c.className='rlogo'; c.alt=''; w.insertBefore(c,w.firstChild);}})();
+
+(function(){
+  var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)');
+  function eyes(){return document.querySelectorAll('#map .tblink');}
+  function set(v){var e=eyes();for(var i=0;i<e.length;i++)e[i].style.opacity=v;}
+  function blink(n){
+    set(1);
+    setTimeout(function(){set(0);
+      if(n>1)setTimeout(function(){blink(n-1);},140);
+    },170);
+  }
+  function loop(){
+    var t=document.getElementById('tour');
+    if(t&&!t.hidden&&!(RM&&RM.matches))blink(Math.random()<.25?2:1);
+    setTimeout(loop,3200+Math.random()*1800);
+  }
+  setTimeout(loop,2200);
+})();
 </script>
 </body>
 </html>
