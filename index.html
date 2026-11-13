@@ -466,6 +466,13 @@
     #map .mapov .btn.zb{height:22px;width:32px}
     #p1 #map .btn.zb svg{width:13px;height:13px}
   }
+  /* control column fills the side strip */
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){
+    #p1 #map .mctl.mapov{height:calc(100% - 16px);bottom:auto;justify-content:space-between}
+    #p1 #map .mctl.mapov > .btn.zb{flex:1 1 0;height:auto;min-height:30px;max-height:50px}
+  }
+  @media (min-width:640px) and (orientation:landscape) and (max-height:359px){#p1 #map .mctl.mapov > .btn.zb{min-height:26px}}
+  @media (min-width:640px) and (orientation:landscape) and (max-height:329px){#p1 #map .mctl.mapov > .btn.zb{min-height:22px}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 </head>
@@ -1035,13 +1042,18 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       else {t.textContent=(bt.at==='kp3'?(state.t>=T1?'Back at ':'At the pier '):'At ')+LOC[bt.at].n.replace(' Port','');}
     }
     box.appendChild(h); box.appendChild(t); box.appendChild(p);
-    var nb=$('notes'); nb.innerHTML='';
+    var nb=$('notes');
     var tx=null; if(state.sel!=null) tx=STOPS[state.sel]; else { STOPS.forEach(function(x){ if(state.t>=x.a && state.t<x.b) tx=x; }); }
-    if(tx){
-      nb.appendChild(el('div',{class:'lab'},tx.short+' · '+fmt(tx.a)+'–'+fmt(tx.b)));
-      if(tx.tips&&tx.tips.length){var ul=el('ul',{id:'minfo-tips'}); tx.tips.forEach(function(s2){ul.appendChild(el('li',null,s2));}); nb.appendChild(ul);}
-      else nb.appendChild(el('p',{class:'mnote'},'No extra notes for this activity.'));
-    } else nb.appendChild(el('p',{class:'mnote'},'Select a row to see its notes.'));
+    function fillNotes(){
+      nb.innerHTML='';
+      if(tx){
+        nb.appendChild(el('div',{class:'lab'},tx.short+' · '+fmt(tx.a)+'–'+fmt(tx.b)));
+        if(tx.tips&&tx.tips.length){var ul=el('ul',{id:'minfo-tips'}); tx.tips.forEach(function(s2){ul.appendChild(el('li',null,s2));}); nb.appendChild(ul);}
+        else nb.appendChild(el('p',{class:'mnote'},'No extra notes for this activity.'));
+      } else nb.appendChild(el('p',{class:'mnote'},'Select a row to see its notes.'));
+    }
+    var nc0=$('notesCard'), closing=(state.sel!==_lastSel)&&!(state.sel!=null&&tx&&tx.tips&&tx.tips.length)&&nc0&&!nc0.hidden;
+    if(closing){ window._pendingNotes=fillNotes; } else { window._pendingNotes=null; fillNotes(); }
     var zn=$('zNotes'); if(zn) zn.classList.toggle('has',!!(tx&&tx.tips&&tx.tips.length));
     var nt2=$('ncTitle'); if(nt2) nt2.textContent=tx?'Notes':'Notes';
     if(state.sel!==_lastSel){ _lastSel=state.sel; if(window._setNotes) window._setNotes(state.sel!=null && !!(tx&&tx.tips&&tx.tips.length)); }
@@ -1068,8 +1080,8 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     function setN(v){
       zn.setAttribute('aria-pressed',String(v));
       if(na){try{na.cancel();}catch(e){} na=null;}
-      if(v){ if(!card.hidden)return; card.hidden=false; fly(true); }
-      else { if(card.hidden)return; fly(false,function(){card.hidden=true;}); }
+      if(v){ if(window._pendingNotes){window._pendingNotes();window._pendingNotes=null;} if(!card.hidden)return; card.hidden=false; fly(true); }
+      else { if(card.hidden)return; fly(false,function(){card.hidden=true; if(window._pendingNotes){window._pendingNotes();window._pendingNotes=null;}}); }
     }
     window._setNotes=setN;
     zn.addEventListener('click',function(){setN(zn.getAttribute('aria-pressed')!=='true');});
