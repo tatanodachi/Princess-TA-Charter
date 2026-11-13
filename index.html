@@ -1436,6 +1436,14 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
 <script>
 (function(){
   function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+  var blobCache={};
+  function shareSrc(src){
+    if(!src||src.indexOf('data:')!==0)return src;
+    if(blobCache[src])return blobCache[src];
+    try{var c=src.indexOf(','), mt=src.slice(5,src.indexOf(';')), bin=atob(src.slice(c+1)), u=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+      return blobCache[src]=URL.createObjectURL(new Blob([u],{type:mt||'image/png'}));}catch(e){return src;}
+  }
   window.genieFly=function(map,els,btn,opening,T,cb){
     if(!els[0]||!els[0].animate||!btn) return null;
     var mr=map.getBoundingClientRect(), rects=els.map(function(e){return e.getBoundingClientRect();});
@@ -1451,7 +1459,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
       w.style.cssText='position:absolute;left:'+(-offX)+'px;top:0;width:'+W+'px;height:'+H+'px;';
       els.forEach(function(e,i){
         var c=e.cloneNode(true); c.setAttribute('data-gclone','1');
-        var im=c.querySelectorAll('img'); for(var m=0;m<im.length;m++){im[m].style.filter='none';}
+        var im=c.querySelectorAll('img'); for(var m=0;m<im.length;m++){im[m].style.filter='none'; im[m].decoding='sync'; im[m].src=shareSrc(e.querySelectorAll('img')[m].src);}
         var r=rects[i];
         c.style.cssText+=';position:absolute;left:'+(r.left-L)+'px;top:'+(r.top-Tp)+'px;width:'+r.width+'px;height:'+r.height+'px;right:auto;bottom:auto;margin:0;transform:none;animation:none;max-height:none;visibility:visible;box-shadow:none;';
         w.appendChild(c);
@@ -1465,24 +1473,29 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     for(var i=0;i<N;i++){
       var x0=xs[i], x1=xs[i+1];
       var st=document.createElement('div');
-      st.style.cssText='position:absolute;left:'+(L-mr.left+x0)+'px;top:'+(Tp-mr.top)+'px;width:'+(x1-x0+1)+'px;height:'+H+'px;overflow:hidden;transform-origin:0 '+oy+'px;will-change:transform,opacity;';
+      st.style.cssText='position:absolute;left:'+(L-mr.left+x0)+'px;top:'+(Tp-mr.top)+'px;width:'+(x1-x0+1)+'px;height:'+H+'px;overflow:hidden;transform-origin:0 '+oy+'px;will-change:transform,opacity;contain:paint;backface-visibility:hidden;-webkit-backface-visibility:hidden;';
       st.appendChild(build(x0));
       host.appendChild(st);
       var kf=[];
       for(var k=0;k<=K;k++){
         var t=k/K, p0=bpos(x0,t,us[i]), p1=bpos(x1,t,us[i+1]);
         var sx=Math.max(.001,(p1.X-p0.X+(t>0?1:0))/(x1-x0+1)), em=(p0.e+p1.e)/2, sy=1-.97*Math.pow(em,.7), op=1-clamp((em-.75)/.25,0,1);
-        kf.push({transform:'translate('+(p0.X-x0)+'px,0) scale('+sx+','+sy+')',opacity:op,offset:t});
+        kf.push({transform:'translate3d('+(p0.X-x0)+'px,0,0) scale3d('+sx+','+sy+',1)',opacity:op,offset:t});
       }
       if(opening){kf.reverse(); kf.forEach(function(f,j){f.offset=j/K;});}
-      anims.push(st.animate(kf,{duration:T,easing:'linear',fill:'both'}));
+      var an=st.animate(kf,{duration:T,easing:'linear',fill:'both'}); an.pause(); an.currentTime=0; anims.push(an);
     }
     map.appendChild(host);
     els.forEach(function(e){e.style.visibility='hidden';});
+    var started=false, cancelled=false;
+    function go(){ if(started||cancelled)return; started=true; anims.forEach(function(a){try{a.currentTime=0;a.play();}catch(e){}}); }
+    void host.offsetWidth;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(go,0); }); });
+    setTimeout(go,120);
     var done=false, finished=0;
     function cleanup(){ if(host.parentNode)host.parentNode.removeChild(host); els.forEach(function(e){e.style.visibility='';}); }
     anims.forEach(function(a){a.onfinish=function(){ finished++; if(finished===anims.length&&!done){done=true; if(cb)cb(); cleanup();} };});
-    return {cancel:function(){ if(done)return; done=true; anims.forEach(function(a){try{a.cancel();}catch(e){}}); cleanup(); }};
+    return {cancel:function(){ if(done)return; done=true; cancelled=true; anims.forEach(function(a){try{a.cancel();}catch(e){}}); cleanup(); }};
   };
 })();
 </script>
