@@ -165,6 +165,9 @@
   @media (max-width:520px){.clock{font-size:28px}.kpi .v{font-size:22px}}
   /* pages */
   .hdr{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#1E2F31;color:#EFEBE7;padding:12px 0;margin-top:-12px;box-shadow:0 0 0 100vmax #1E2F31;clip-path:inset(0 -100vmax)}
+  .hdr{position:relative;isolation:isolate}
+  .hdr::before{content:'';position:absolute;top:0;bottom:0;left:-100vmax;right:-100vmax;z-index:-1;background:radial-gradient(60% 140% at 85% 0%,rgba(28,96,72,.55),transparent 70%),linear-gradient(100deg,#1E2F31 0%,#1B3835 60%,#1E2F31 100%);pointer-events:none}
+  .hdr::after{content:'';position:absolute;left:-100vmax;right:-100vmax;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(217,201,163,.55) 50%,transparent);pointer-events:none}
   .hdr h1{color:#EFEBE7}
   .hdr .sub{color:#B9C9C2}
   .hdr .sub .rn{padding:1px 5px;margin:0 -5px;border-radius:5px;transition:background .2s,color .2s}
@@ -463,6 +466,17 @@
     #map .mapov .btn.zb{height:22px;width:32px}
     #p1 #map .btn.zb svg{width:13px;height:13px}
   }
+
+  /* water sweep on portrait -> landscape */
+  #wave{position:fixed;inset:0;z-index:60;overflow:hidden;pointer-events:none;display:none}
+  #wave.on{display:block}
+  #wave .wrot{position:absolute;left:50%;top:50%;width:300vmax;height:300vmax;margin:-150vmax 0 0 -150vmax;will-change:transform}
+  #wave .wlvl{position:absolute;left:0;right:0;top:50%;height:150vmax;will-change:transform}
+  #wave .wcrest{position:absolute;left:0;right:0;top:-34px;height:36px;overflow:hidden}
+  #wave .wcrest svg{position:absolute;left:0;top:0;width:200%;height:36px;animation:wslide 1.1s linear infinite}
+  @keyframes wslide{to{transform:translateX(-50%)}}
+  #wave .wbody{position:absolute;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(40,120,98,.9) 0,rgba(26,72,68,.94) 40%,rgba(30,47,49,.97) 100%)}
+  @media (prefers-reduced-motion:reduce){#wave{display:none!important}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 </head>
@@ -1271,7 +1285,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     function open(){if(anim)return; STEPS=S_BASE.slice(); if(wantA2hs())STEPS.push(S_A2HS); step=0;tour.hidden=false;render();fly(true);}
     var zh=$('zHelp'); if(zh) zh.addEventListener('click',open);
     function close(){ if(anim||tour.hidden)return; mark(); map.classList.remove('tour-s2'); fly(false,function(){tour.hidden=true;}); }
-    function start(){ if(shown||done()||!ready()) return; shown=true; open(); }
+    function start(){ if(shown||done()||!ready()||window._waveBusy) return; shown=true; open(); }
     $('tNext').addEventListener('click',function(){ if(step>=STEPS.length-1){close();} else {step++;render();} });
     $('tSkip').addEventListener('click',close);
     $('tBack').addEventListener('click',function(){ if(step>0){step--;render();} });
@@ -1343,6 +1357,27 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     setTimeout(loop,3200+Math.random()*1800);
   }
   setTimeout(loop,2200);
+})();
+</script>
+<div id="wave" aria-hidden="true"><div class="wrot" id="wrot"><div class="wlvl" id="wlvl"><div class="wcrest"><svg viewBox="0 0 240 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 18 Q30 2 60 18 T120 18 T180 18 T240 18 V36 H0Z" fill="rgba(40,120,98,.9)"/><path d="M0 18 Q30 2 60 18 T120 18 T180 18 T240 18" fill="none" stroke="rgba(243,249,246,.75)" stroke-width="1.6"/></svg></div><div class="wbody"></div></div></div></div>
+
+<script>
+(function(){
+  if(!window.matchMedia||!document.getElementById('wave')) return;
+  var land=matchMedia('(min-width:640px) and (orientation:landscape)'), was=land.matches, wave=document.getElementById('wave'), rot=document.getElementById('wrot'), lvl=document.getElementById('wlvl');
+  function ang(){var a=(screen.orientation&&typeof screen.orientation.angle==='number')?screen.orientation.angle:(typeof window.orientation==='number'?window.orientation:0); if(a===270)a=-90; return a;}
+  function rm(){return matchMedia('(prefers-reduced-motion:reduce)').matches;}
+  function play(a){
+    if(!rot.animate||rm()) return;
+    var W=innerWidth,H=innerHeight,m=Math.max(W,H), a0=(a===90)?-90:90; // water starts on the side that was the portrait bottom
+    window._waveBusy=true; wave.classList.add('on');
+    var T=1100;
+    var r=rot.animate([{transform:'rotate('+a0+'deg)'},{transform:'rotate('+(-a0*.07)+'deg)',offset:.62},{transform:'rotate(0deg)'}],{duration:T,easing:'cubic-bezier(.3,.1,.3,1)',fill:'both'});
+    var l=lvl.animate([{transform:'translateY('+(-H*.02)+'px)'},{transform:'translateY('+(-H*.02)+'px)',offset:.3},{transform:'translateY('+(m/2+80)+'px)'}],{duration:T,easing:'cubic-bezier(.55,0,.8,.5)',fill:'both'});
+    l.onfinish=function(){wave.classList.remove('on'); try{r.cancel();l.cancel();}catch(e){} window._waveBusy=false; try{window.dispatchEvent(new Event('orientationchange'));}catch(e){}};
+  }
+  function chg(){ var now=land.matches; if(now&&!was){var a=ang(); if(a===90||a===-90) play(a);} was=now; }
+  if(land.addEventListener) land.addEventListener('change',chg); else if(land.addListener) land.addListener(chg);
 })();
 </script>
 </body>
