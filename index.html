@@ -236,6 +236,13 @@
   #map .notescard{position:absolute;right:112px;bottom:74px;z-index:4;width:min(54%,300px);max-height:46%;overflow:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:8px 10px;box-shadow:0 4px 16px rgba(30,47,49,.18);font-size:11px;line-height:1.4;color:var(--ink)}
   @media (min-width:640px) and (orientation:landscape) and (max-height:500px){#map .notescard{width:222px;max-height:58%;bottom:56px;right:108px;font-size:10px;padding:6px 8px}}
   #map .notescard[hidden]{display:none}
+  #map .dyk{position:absolute;z-index:5;display:flex;align-items:flex-end;pointer-events:none}
+  #map .dyk .dykm{position:relative;display:block;flex:none;width:46px;aspect-ratio:187/190;margin-right:-4px;z-index:1;animation:none;height:auto}
+  #map .dyk .dykm img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 5px rgba(30,47,49,.25))}
+  #map .dyk .bub{position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:6px 9px;font-size:11px;line-height:1.4;color:var(--ink);width:180px;box-shadow:0 4px 14px rgba(30,47,49,.18);margin-bottom:10px}
+  #map .dyk .bub::before{content:"";position:absolute;left:-5px;bottom:12px;width:8px;height:8px;background:var(--surface);border-left:1px solid var(--ring);border-bottom:1px solid var(--ring);transform:rotate(45deg)}
+  #map .dyk .bub b{display:block;color:var(--accent);margin-bottom:1px}
+  @media (min-width:640px) and (orientation:landscape) and (max-height:500px){#map .dyk .dykm{width:40px}#map .dyk .bub{font-size:10px;width:158px;padding:5px 8px}}
   #map .nchead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
   #map .nchead b{font-family:var(--fh);font-size:12px}
   #map .ncx{border:0;background:transparent;color:var(--ink2);font-size:20px;line-height:1;padding:0 2px;cursor:pointer}
@@ -603,6 +610,12 @@
      tips:['Estimated arrival around 19.30, after dark.']}
   ];
   STOPS.forEach(function(x,i){x.id=i;x.a=toM(x.s);x.b=toM(x.e);x.d=x.b-x.a;});
+  var DYK={1:'The sand is pink thanks to tiny red-shelled foraminifera and crushed red coral mixed into white sand.',
+    3:'Taka Makassar is not a true island: it is a crescent of sand that surfaces at low tide and largely submerges at high tide.',
+    5:'Both green and hawksbill turtles live in Komodo\u2019s waters. Look for them grazing near the reef.',
+    7:'Komodo dragons are the world\u2019s largest living lizards, and Rinca is home to well over 1,000 of them.',
+    9:'\u201CKalong\u201D is Indonesian for \u201Cflying fox\u201D, the giant fruit bats. At dusk they leave the mangroves and head toward Flores to feed.'};
+  STOPS.forEach(function(x){x.fact=DYK[x.id]||'';});
 
   var state = {t:T0, sel:null, filter:'all', table:false};
   var $ = function(id){return document.getElementById(id);};
@@ -934,7 +947,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     Object.keys(LOC).sort(function(a,b){return (foc&&foc.loc===a?1:0)-(foc&&foc.loc===b?1:0);}).forEach(function(k){
       var p=SNAP[k], x=X(p[0]), y=Y(p[1]), isSel=foc&&foc.loc===k;
       var sid=PLACE_STOP[k], dim=state.filter!=='all'&&k!=='kp3'&&STOPS[sid].cat!==state.filter&&!false;
-      var g=s('g',{class:'mk',tabindex:0,role:'button','aria-label':LOC[k].n,opacity:dim?.3:((foc&&foc.loc&&!isSel)?.6:1),style:'cursor:pointer'});
+      var g=s('g',{class:isSel?'mk msel':'mk',tabindex:0,role:'button','aria-label':LOC[k].n,opacity:dim?.3:((foc&&foc.loc&&!isSel)?.6:1),style:'cursor:pointer'});
       var r=(narrow?9:11)+(isSel?3:0);
       if(isSel){
         g.appendChild(s('circle',{class:'selhalo',cx:x,cy:y,r:r+12,fill:'var(--accent)',opacity:.22,'pointer-events':'none'}));
@@ -1057,6 +1070,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     var zn=$('zNotes'); if(zn) zn.classList.toggle('has',!!(tx&&tx.tips&&tx.tips.length));
     var nt2=$('ncTitle'); if(nt2) nt2.textContent=tx?'Notes':'Notes';
     if(state.sel!==_lastSel){ _lastSel=state.sel; if(window._setNotes) window._setNotes(state.sel!=null && !!(tx&&tx.tips&&tx.tips.length)); }
+    if(window._dykSync) window._dykSync();
   }
   var _lastSel=null;
   (function(){
@@ -1080,10 +1094,58 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     function setN(v){
       zn.setAttribute('aria-pressed',String(v));
       if(na){try{na.cancel();}catch(e){} na=null;}
-      if(v){ if(window._pendingNotes){window._pendingNotes();window._pendingNotes=null;} if(!card.hidden)return; card.hidden=false; fly(true); }
+      if(!v&&window._dykHide)window._dykHide();
+      if(v){ if(window._pendingNotes){window._pendingNotes();window._pendingNotes=null;} if(!card.hidden){if(window._dykSync)window._dykSync();return;} card.hidden=false; fly(true); if(window._dykSync)window._dykSync(); }
       else { if(card.hidden)return; fly(false,function(){card.hidden=true; if(window._pendingNotes){window._pendingNotes();window._pendingNotes=null;}}); }
     }
     window._setNotes=setN;
+    var dk=null, dkKey=null, dkTimer=null, dkPend=null;
+    function dkHide(){
+      clearTimeout(dkTimer); dkTimer=null; dkKey=null; dkPend=null;
+      var d=dk; dk=null; if(!d)return;
+      if(d.animate&&!rmN()){var a=d.animate([{opacity:1},{opacity:0}],{duration:140,fill:'forwards'}); a.onfinish=function(){d.remove();};} else d.remove();
+    }
+    function dkPos(){
+      if(!dk)return;
+      var map=$('map'), mr=map.getBoundingClientRect(), cr=card.getBoundingClientRect(), w=dk.offsetWidth, h=dk.offsetHeight, g=8;
+      var sm=document.querySelector('#map svg .msel'), sr=null;
+      if(sm){var b=sm.getBoundingClientRect(); sr={l:b.left-6,t:b.top-6,r:b.right+6,b:b.bottom+6};}
+      var others=[]; var mks=document.querySelectorAll('#map svg .mk:not(.msel)'); for(var m=0;m<mks.length;m++){var rb=mks[m].getBoundingClientRect(); others.push({l:rb.left,t:rb.top,r:rb.right,b:rb.bottom});}
+      var xs=[cr.left-w-g, cr.left-w-g-70, cr.left-w-g-140, cr.right-w, cr.left];
+      var ys=[cr.bottom-h, cr.top, cr.top-h-6, cr.bottom-h-50, cr.top-h-50];
+      var best=null, bs=1e9;
+      for(var i=0;i<ys.length;i++)for(var j=0;j<xs.length;j++){
+        var l=xs[j], t=ys[i], r=l+w, bt=t+h;
+        if(l<mr.left+4||t<mr.top+4||r>mr.right-4||bt>mr.bottom-4) continue;
+        if(!(r<=cr.left-4||l>=cr.right+4||bt<=cr.top-4||t>=cr.bottom+4)) continue;
+        var ov=0; if(sr){var ow=Math.min(r,sr.r)-Math.max(l,sr.l), oh=Math.min(bt,sr.b)-Math.max(t,sr.t); if(ow>0&&oh>0)ov=ow*oh;}
+        var ov2=0; for(var q=0;q<others.length;q++){var o=others[q], ow2=Math.min(r,o.r)-Math.max(l,o.l), oh2=Math.min(bt,o.b)-Math.max(t,o.t); if(ow2>0&&oh2>0)ov2+=ow2*oh2;}
+        var sc=ov*1000+ov2*20+i*5+j;
+        if(sc<bs){bs=sc;best=[l,t];}
+      }
+      if(!best){dk.style.visibility='hidden';return;}
+      dk.style.visibility='visible';
+      dk.style.left=(best[0]-mr.left)+'px'; dk.style.top=(best[1]-mr.top)+'px';
+    }
+    function dkShow(key,text){
+      var src=$('tmas'), m=src.cloneNode(true); m.removeAttribute('id'); m.className='dykm'; m.removeAttribute('style');
+      var d=el('div',{class:'dyk','aria-hidden':'true'}), bub=el('div',{class:'bub'});
+      bub.appendChild(el('b',null,'Did you know?')); bub.appendChild(document.createTextNode(text));
+      d.appendChild(m); d.appendChild(bub); d.style.visibility='hidden'; $('map').appendChild(d); dk=d; dkKey=key; dkPos();
+      if(d.animate){d.animate(rmN()?[{opacity:0},{opacity:1}]:[{opacity:0,transform:'scale(.82)'},{opacity:1,transform:'scale(1)'}],{duration:rmN()?160:300,easing:'cubic-bezier(.2,.8,.2,1)'});
+        d.style.transformOrigin='right bottom';}
+    }
+    window._dykHide=function(){dkHide();};
+    window._dykSync=function(){
+      var st=(state.sel!=null)?STOPS[state.sel]:null;
+      var want=(st&&st.fact&&!card.hidden&&zn.getAttribute('aria-pressed')==='true')?st.id:null;
+      if(want==null){ if(dk||dkTimer)dkHide(); return; }
+      if(dkKey===want){ dkPos(); return; }
+      if(dkPend===want)return;
+      dkHide();
+      var k=want; dkPend=k; dkTimer=setTimeout(function(){ dkTimer=null; dkPend=null; var s2=(state.sel!=null)?STOPS[state.sel]:null; if(s2&&s2.id===k&&!card.hidden&&zn.getAttribute('aria-pressed')==='true') dkShow(k,s2.fact); },650);
+    };
+    window.addEventListener('resize',function(){dkPos();});
     zn.addEventListener('click',function(){setN(zn.getAttribute('aria-pressed')!=='true');});
     $('ncX').addEventListener('click',function(){setN(false);});
     ['pointerdown','touchstart','wheel'].forEach(function(ev){card.addEventListener(ev,function(e){e.stopPropagation();},{passive:true});});
@@ -1364,7 +1426,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
   }
   function loop(){
     var t=document.getElementById('tour');
-    if(t&&!t.hidden&&!(RM&&RM.matches))blink(Math.random()<.25?2:1);
+    if(((t&&!t.hidden)||document.querySelector('#map .dyk'))&&!(RM&&RM.matches))blink(Math.random()<.25?2:1);
     setTimeout(loop,3200+Math.random()*1800);
   }
   setTimeout(loop,2200);
@@ -1424,5 +1486,6 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
   };
 })();
 </script>
+<script>if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body>
 </html>
