@@ -431,6 +431,7 @@
   #map .tstep{font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
   #map .tback{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;padding:4px 2px;cursor:pointer}
   #map .ttxt{margin:0 0 8px}
+  #p1 #map .ttxt svg.tmenuic{position:static;inset:auto;display:inline-block;width:1.15em;height:1.15em;right:auto;vertical-align:-.2em;margin:0 .1em}
   #map .tbtns{display:flex;justify-content:space-between;align-items:center;gap:8px}
   #map .tskip{background:none;border:0;color:var(--muted);font:inherit;font-size:11px;padding:2px 0 2px 8px;margin:-2px 0;cursor:pointer}
   #map .tnext{background:var(--ink);color:var(--bg);border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:600;padding:5px 16px;cursor:pointer}
@@ -1215,7 +1216,7 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     var KEY='ptaTourDone', step=0, shown=false;
     var STEPS=[];
     var S_BASE=['You can select a route or location on the map for additional information.','Slide this to see the route information at any time.'];
-    var S_A2HS='Want quicker access? Add me to your Home Screen: tap Share (or the \u2026 menu), choose Add to Home Screen, and keep \u201cOpen as Web App\u201d switched on.';
+    var S_A2HS='Want quicker access? Add me to your Home Screen: tap Share (or the {menu} menu), choose Add to Home Screen, and keep \u201cOpen as Web App\u201d switched on.';
     function wantA2hs(){
       var ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
       var sa=(navigator.standalone===true)||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
@@ -1236,7 +1237,12 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     }
     function render(){
       $('tStep').textContent=(step+1)+' / '+STEPS.length;
-      $('tTxt').textContent=STEPS[step];
+      var tt=$('tTxt'),txt=STEPS[step];
+      if(txt.indexOf('{menu}')>-1){var p=txt.split('{menu}'); tt.textContent=p[0];
+        var ic=document.createElementNS('http://www.w3.org/2000/svg','svg'); ic.setAttribute('viewBox','0 0 24 24'); ic.setAttribute('class','tmenuic'); ic.setAttribute('aria-label','three-line'); ic.setAttribute('role','img');
+        ic.innerHTML='<path d="M4 7h16M4 12h16M4 17h8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>';
+        tt.appendChild(ic); tt.appendChild(document.createTextNode(p[1]));
+      } else tt.textContent=txt;
       $('tNext').textContent=step===STEPS.length-1?'Got it':'Next';
       $('tBack').style.visibility=step===0?'hidden':'visible';
       var sl=(step===1); tour.classList.toggle('s1',!sl); tour.classList.toggle('s2',sl);
