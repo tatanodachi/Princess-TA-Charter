@@ -1435,11 +1435,22 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
         var l=ensure(); if(!l)return; l.click(); if(n>1) setTimeout(function(){try{l.click();}catch(e){}},90);
       }catch(e){}
     }
+    // iOS Safari only allows the switch-haptic inside a real touch gesture: while the slider is being dragged, remember the arrival and fire when the finger lifts.
+    var dragging=false, pending=0, sl=document.getElementById('slider');
+    function dn(){dragging=true;}
+    function up(){
+      if(!dragging)return; dragging=false;
+      if(pending){ var n=pending; pending=0; if(boatAt(state.t).at && !rmo()) tick(n); }
+    }
+    if(sl){ sl.addEventListener('pointerdown',dn); sl.addEventListener('touchstart',dn,{passive:true}); }
+    ['pointerup','pointercancel','touchend','touchcancel'].forEach(function(e){document.addEventListener(e,up,true);});
     return {check:function(){
       var at=boatAt(state.t).at, prev=lastAt; lastAt=at;
       if(!at||at===prev||rmo())return;
       var now=Date.now(); if(lastBuzz[at]&&now-lastBuzz[at]<3000)return; lastBuzz[at]=now;
-      tick(at==='kp3'?2:1);
+      var n=at==='kp3'?2:1;
+      if(!navigator.vibrate && dragging){ pending=Math.max(pending,n); return; }
+      tick(n);
     }};
   })();
   $('slider').addEventListener('input',function(){releaseSel();state.t=+this.value;state.nowNote='';renderNow();renderGantt();renderList();Hp.check();});
