@@ -1521,17 +1521,29 @@ var ROUTE={"KP3-Pink":{"pts":[[119.87335,-8.49381],[119.87164,-8.4953],[119.8682
     function ease(q){return Math.pow(q,1.5);}
     function bpos(xb,t,ub){var q=clamp((t-d*ub)/(1-d),0,1), e=ease(q); return {X:xb+(txl-xb)*e,e:e};}
     var xs=[],us=[]; for(var b=0;b<=N;b++){xs.push(W*b/N); us.push(sign>0?1-b/N:b/N);}
+    function homog(w,h,q){ // unit-square->quad (Heckbert), composed with 1/w,1/h; q=[x0,y0,x1,y1,x2,y2,x3,y3]
+      var x0=q[0],y0=q[1],x1=q[2],y1=q[3],x2=q[4],y2=q[5],x3=q[6],y3=q[7];
+      var sx=x0-x1+x2-x3, sy=y0-y1+y2-y3, g=0, hh=0;
+      if(Math.abs(sx)>1e-9||Math.abs(sy)>1e-9){
+        var dx1=x1-x2,dx2=x3-x2,dy1=y1-y2,dy2=y3-y2, den=dx1*dy2-dx2*dy1;
+        g=(sx*dy2-dx2*sy)/den; hh=(dx1*sy-sx*dy1)/den;
+      }
+      var A=x1-x0+g*x1, B=x3-x0+hh*x3, C=x0, D=y1-y0+g*y1, E=y3-y0+hh*y3, F=y0;
+      return 'matrix3d('+[A/w,D/w,0,g/w, B/h,E/h,0,hh/h, 0,0,1,0, C,F,0,1].map(function(n){return +n.toFixed(6);}).join(',')+')';
+    }
     for(var i=0;i<N;i++){
-      var x0=xs[i], x1=xs[i+1];
+      var x0=xs[i], x1=xs[i+1], sw=x1-x0+1;
       var st=document.createElement('div');
-      st.style.cssText='position:absolute;left:'+(L-mr.left+x0)+'px;top:'+(Tp-mr.top)+'px;width:'+(x1-x0+1)+'px;height:'+H+'px;overflow:hidden;transform-origin:0 '+oy+'px;will-change:transform,opacity;contain:paint;backface-visibility:hidden;-webkit-backface-visibility:hidden;';
+      st.style.cssText='position:absolute;left:'+(L-mr.left+x0)+'px;top:'+(Tp-mr.top)+'px;width:'+sw+'px;height:'+H+'px;overflow:hidden;transform-origin:0 0;will-change:transform,opacity;contain:paint;backface-visibility:hidden;';
       st.appendChild(build(x0));
       host.appendChild(st);
       var kf=[];
       for(var k=0;k<=K;k++){
         var t=k/K, p0=bpos(x0,t,us[i]), p1=bpos(x1,t,us[i+1]);
-        var sx=Math.max(.001,(p1.X-p0.X+(t>0?1:0))/(x1-x0+1)), em=(p0.e+p1.e)/2, sy=1-.97*Math.pow(em,.7), op=1-clamp((em-.75)/.25,0,1);
-        kf.push({transform:'translate3d('+(p0.X-x0)+'px,0,0) scale3d('+sx+','+sy+',1)',opacity:op,offset:t});
+        var s0=1-.97*Math.pow(p0.e,.7), s1=1-.97*Math.pow(p1.e,.7), em=(p0.e+p1.e)/2, op=1-clamp((em-.75)/.25,0,1);
+        var XL=p0.X-x0, XR=Math.max(XL+.5,(p1.X-x0)+(t>0?1:0));
+        var q=[XL,oy*(1-s0), XR,oy*(1-s1), XR,oy+s1*(H-oy), XL,oy+s0*(H-oy)];
+        kf.push({transform:homog(sw,H,q),opacity:op,offset:t});
       }
       if(opening){kf.reverse(); kf.forEach(function(f,j){f.offset=j/K;});}
       var an=st.animate(kf,{duration:T,easing:'linear',fill:'both'}); an.pause(); an.currentTime=0; anims.push(an);
